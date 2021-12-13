@@ -1,75 +1,38 @@
-extensions [palette]
 breed [parties party]
+breed [voters voter]
 
 to setup
+  __change-topology false false ; set world wrapping to false
   clear-all
   ask patches [
-    set pcolor palette:scale-gradient [[255 0 0] [0 0 255]] pxcor min-pxcor max-pxcor
+    set pcolor white
   ]
-
-  create_politicians
   create_voters
 
 end
 
 
-to create_politicians
-  create-turtles 2
-  ask turtles [
-    set shape "person"
-    set size 3
-    set color black
-  ]
-  ask turtle 0 [set xcor 15]
-  ask turtle 1 [set xcor -15]
-
-end
-
-
 to create_voters
-  create-turtles number_of_voters
-  ask turtles with [size = 1] [
+  create-voters number_of_voters
+  ask voters [
     set shape "person"
-    set color white
+    set color black
     setxy random-xcor random-ycor
-
   ]
-  ask turtles with [color = white][fd 10]
 
 end
 
 
 to confirm_parties
-  ;show partij1
-  ;show partij2
-  ;show partij3
-  ; check if there are no duplicate parties chosen:
   ifelse partij1 = partij2 or partij1 = partij3 or partij2 = partij3 [
     show "U kunt niet meermaal dezelfde partij kiezen"
-  ]
-  [
+  ] [
   place_parties
-  show "place_parties"
   ]
 
 end
 
 to place_parties
-
-  let lst ["D66" [-3 12]
-    "Groen Links" [-12 11]
-    "VVD" [8 -2]
-    "PvDA" [-10 8]
-    "SP" [-15 6]
-    "SGP" [3 -8]
-    "FVD" [12 -15]
-    "Denk" [-11 6]
-    "JA21" [7 -10]
-    "50Plus" [-4 -2]
-    "PVV" [-2 -12]
-    "CDA" [1 -3]
-  ]
-
   let partij ["D66"
 "Groen Links"
 "VVD"
@@ -98,12 +61,42 @@ to place_parties
     [1 -3]
   ]
 
-  show position partij1 partij
-  ;show item partij coords
-  ; foreach -> loopen door beide lijsten
-  ; gebruik coords van geselecteerde partijen om de 3 partijen te plaatsen
+  foreach coords
+  [ xy -> if position xy coords = position partij1 partij
+    or position xy coords = position partij2 partij
+    or position xy coords = position partij3 partij
+    [
+    create-parties 1 [ setxy item 0 xy item 1 xy ]
+      ask parties [
+    set shape "person"
+    set size 3
+  ] ] ]
+  calculate_distance
 
 end
+
+
+to calculate_distance
+  ;ask parties [show max-one-of voters [distance myself] ]
+
+  ask voters [
+    show min-one-of parties [distance myself]
+  ]
+
+
+  ask voters [
+    ;let dist list [xcor ycor of voter]
+    pen-down
+    let chosen-party min-one-of (parties) [distance myself]
+    set heading towards chosen-party
+    forward 5
+  ]
+
+
+  ;show [who] of turtles with [color = red]
+
+end
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -119,8 +112,8 @@ GRAPHICS-WINDOW
 1
 1
 0
-1
-1
+0
+0
 1
 -16
 16
@@ -157,7 +150,7 @@ CHOOSER
 partij1
 partij1
 "D66" "Groen Links" "VVD" "PvDA" "SP" "SGP" "FVD" "Denk" "JA21" "50Plus" "PVV" "CDA"
-2
+1
 
 CHOOSER
 18
@@ -167,7 +160,7 @@ CHOOSER
 partij2
 partij2
 "D66" "Groen Links" "VVD" "PvDA" "SP" "SGP" "FVD" "Denk" "JA21" "50Plus" "PVV" "CDA"
-1
+9
 
 CHOOSER
 18
@@ -177,7 +170,7 @@ CHOOSER
 partij3
 partij3
 "D66" "Groen Links" "VVD" "PvDA" "SP" "SGP" "FVD" "Denk" "JA21" "50Plus" "PVV" "CDA"
-3
+6
 
 BUTTON
 84
@@ -205,7 +198,7 @@ number_of_voters
 number_of_voters
 5
 150
-71.0
+105.0
 1
 1
 NIL
