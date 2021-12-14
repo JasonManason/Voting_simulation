@@ -33,33 +33,9 @@ to confirm_parties
 end
 
 to place_parties
-  let partij ["D66"
-"Groen Links"
-"VVD"
-"PvDA"
-"SP"
-"SGP"
-"FVD"
-"Denk"
-"JA21"
-"50Plus"
-"PVV"
-"CDA"]
+  let partij ["D66" "Groen Links" "VVD" "PvDA" "SP" "SGP" "FVD" "Denk" "JA21" "50Plus" "PVV" "CDA"]
 
-  let coords [
-    [-3 12]
-    [-12 11]
-    [8 -2]
-    [-10 8]
-    [-15 6]
-    [3 -8]
-    [12 -15]
-    [-11 6]
-    [7 -10]
-    [-4 -2]
-    [-2 -12]
-    [1 -3]
-  ]
+  let coords [ [-3 12] [-12 11] [8 -2] [-10 8] [-15 6] [3 -8] [12 -15] [-11 6] [7 -10] [-4 -2] [-2 -12] [1 -3] ]
 
   foreach coords
   [ xy -> if position xy coords = position partij1 partij
@@ -70,12 +46,14 @@ to place_parties
       ask parties [
     set shape "person"
     set size 3
+    set color black
   ] ] ]
 
 end
 
 
 to plurality_voting
+
   ask voters [
     show min-one-of parties [distance myself]
   ]
@@ -83,6 +61,63 @@ to plurality_voting
   ask voters [
     create-link-with min-one-of parties [distance myself]
   ]
+
+  ask parties [
+    show count link-neighbors
+  ]
+
+ask turtle (number_of_voters) [
+    ask my-links [
+      set color green
+    ]
+    ask link-neighbors [
+      set color green
+    ]
+  ]
+
+  ask turtle (number_of_voters + 1) [
+    ask my-links [
+      set color blue
+    ]
+     ask link-neighbors [
+      set color blue
+    ]
+  ]
+
+  ask turtle (number_of_voters + 2) [
+    ask my-links [
+      set color red
+    ]
+     ask link-neighbors [
+      set color red
+    ]
+  ]
+
+end
+
+
+to-report count_results
+  report count turtles with [color = red]
+  report count turtles with [color = blue]
+  report count turtles with [color = green]
+
+end
+
+
+to approval_voting
+  ;check radius around party: if within range of n, then create link? multiple links approved or even none
+  ;ask parties [
+   ; ask voters in-radius 3 [
+    ;  create-link-with parties [distance myself]
+   ; ]
+
+  ;]
+
+end
+
+
+to instant_runoff
+  ; ticks gebruiken voor meerdere rondes
 
 end
 @#$#@#$#@
@@ -138,7 +173,7 @@ CHOOSER
 partij1
 partij1
 "D66" "Groen Links" "VVD" "PvDA" "SP" "SGP" "FVD" "Denk" "JA21" "50Plus" "PVV" "CDA"
-7
+1
 
 CHOOSER
 15
@@ -158,7 +193,7 @@ CHOOSER
 partij3
 partij3
 "D66" "Groen Links" "VVD" "PvDA" "SP" "SGP" "FVD" "Denk" "JA21" "50Plus" "PVV" "CDA"
-5
+6
 
 BUTTON
 15
@@ -186,7 +221,7 @@ number_of_voters
 number_of_voters
 5
 150
-105.0
+44.0
 1
 1
 NIL
@@ -197,8 +232,25 @@ BUTTON
 301
 129
 334
-plurality voting
+Plurality voting
 plurality_voting
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+16
+341
+129
+374
+Approval voting
+approval_voting
 NIL
 1
 T
@@ -555,6 +607,32 @@ NetLogo 6.2.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="plurality voting" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup
+confirm_parties</setup>
+    <go>plurality_voting</go>
+    <timeLimit steps="1"/>
+    <metric>count turtles with [color = red]</metric>
+    <metric>count turtles with [color = green]</metric>
+    <metric>count turtles with [color = blue]</metric>
+    <enumeratedValueSet variable="partij1">
+      <value value="&quot;Groen Links&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="partij2">
+      <value value="&quot;JA21&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="partij3">
+      <value value="&quot;FVD&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number_of_voters">
+      <value value="5"/>
+      <value value="50"/>
+      <value value="100"/>
+      <value value="150"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
