@@ -71,32 +71,20 @@ to place_parties
     set shape "person"
     set size 3
   ] ] ]
-  calculate_distance
 
 end
 
 
-to calculate_distance
-  ;ask parties [show max-one-of voters [distance myself] ]
-
+to plurality_voting
   ask voters [
     show min-one-of parties [distance myself]
   ]
 
-
   ask voters [
-    ;let dist list [xcor ycor of voter]
-    pen-down
-    let chosen-party min-one-of (parties) [distance myself]
-    set heading towards chosen-party
-    forward 5
+    create-link-with min-one-of parties [distance myself]
   ]
 
-
-  ;show [who] of turtles with [color = red]
-
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -143,41 +131,41 @@ NIL
 1
 
 CHOOSER
-18
-73
-156
-118
+15
+51
+153
+96
 partij1
 partij1
 "D66" "Groen Links" "VVD" "PvDA" "SP" "SGP" "FVD" "Denk" "JA21" "50Plus" "PVV" "CDA"
-1
+7
 
 CHOOSER
-18
-124
-156
-169
+15
+102
+153
+147
 partij2
 partij2
 "D66" "Groen Links" "VVD" "PvDA" "SP" "SGP" "FVD" "Denk" "JA21" "50Plus" "PVV" "CDA"
-9
+8
 
 CHOOSER
-18
-177
-156
-222
+15
+155
+153
+200
 partij3
 partij3
 "D66" "Groen Links" "VVD" "PvDA" "SP" "SGP" "FVD" "Denk" "JA21" "50Plus" "PVV" "CDA"
-6
+5
 
 BUTTON
-84
-11
-201
-44
-Bevestig keuze
+15
+248
+153
+281
+Bevestig gekozen partijen
 confirm_parties
 NIL
 1
@@ -190,10 +178,10 @@ NIL
 1
 
 SLIDER
-18
-228
-156
-261
+15
+206
+153
+239
 number_of_voters
 number_of_voters
 5
@@ -203,6 +191,23 @@ number_of_voters
 1
 NIL
 HORIZONTAL
+
+BUTTON
+16
+301
+129
+334
+plurality voting
+plurality_voting
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
