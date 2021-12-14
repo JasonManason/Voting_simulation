@@ -9,6 +9,26 @@ to setup
   ]
   create_voters
 
+
+end
+
+
+to draw_grid
+cro 1 [
+    home
+    pendown
+    set pen-size 1
+    set heading  0 draw_line home
+    set heading  90 draw_line home
+    set heading  180 draw_line home
+    set heading  270 draw_line home
+    die
+  ]
+end
+
+
+to draw_line
+  repeat max-pxcor [fd 1 rt 90 fd .4 bk .8 fd .4 lt 90]
 end
 
 
@@ -133,10 +153,10 @@ to set_matching_colors
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
-10
-647
-448
+223
+51
+660
+489
 -1
 -1
 13.0
@@ -286,6 +306,80 @@ radius
 1
 NIL
 HORIZONTAL
+
+BUTTON
+87
+11
+150
+44
+Grid
+draw_grid
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+15
+410
+84
+443
+Clear
+clear-all
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+TEXTBOX
+401
+36
+551
+54
+PROGRESSIEF
+12
+0.0
+1
+
+TEXTBOX
+187
+260
+337
+278
+LINKS\n
+12
+0.0
+1
+
+TEXTBOX
+661
+262
+811
+280
+RECHTS
+12
+0.0
+1
+
+TEXTBOX
+397
+491
+547
+509
+CONSERVATIEF
+12
+0.0
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -629,7 +723,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.2.1
+NetLogo 6.2.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
