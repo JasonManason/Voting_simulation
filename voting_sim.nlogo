@@ -32,6 +32,7 @@ to confirm_parties
 
 end
 
+
 to place_parties
   let partij ["D66" "Groen Links" "VVD" "PvDA" "SP" "SGP" "FVD" "Denk" "JA21" "50Plus" "PVV" "CDA"]
 
@@ -53,7 +54,7 @@ end
 
 
 to plurality_voting
-
+  clear-links
   ask voters [
     show min-one-of parties [distance myself]
   ]
@@ -66,58 +67,56 @@ to plurality_voting
     show count link-neighbors
   ]
 
-ask turtle (number_of_voters) [
-    ask my-links [
-      set color green
-    ]
-    ask link-neighbors [
-      set color green
-    ]
-  ]
-
-  ask turtle (number_of_voters + 1) [
-    ask my-links [
-      set color blue
-    ]
-     ask link-neighbors [
-      set color blue
-    ]
-  ]
-
-  ask turtle (number_of_voters + 2) [
-    ask my-links [
-      set color red
-    ]
-     ask link-neighbors [
-      set color red
-    ]
-  ]
-
-end
-
-
-to-report count_results
-  report count turtles with [color = red]
-  report count turtles with [color = blue]
-  report count turtles with [color = green]
+  set_matching_colors
 
 end
 
 
 to approval_voting
-  ;check radius around party: if within range of n, then create link? multiple links approved or even none
-  ;ask parties [
-   ; ask voters in-radius 3 [
-    ;  create-link-with parties [distance myself]
-   ; ]
+  clear-links
+  ask parties [
+    create-links-with voters in-radius 16
+  ]
 
-  ;]
+  set_matching_colors ;note: first choice will be the color of the voter, even though they can have multiple votes.
 
 end
 
 
 to instant_runoff
+  clear-links
   ; ticks gebruiken voor meerdere rondes
+
+end
+
+
+to set_matching_colors
+  ask turtle (number_of_voters) [ ;party 1
+    ask my-links [
+      set color red
+    ]
+    ask link-neighbors [
+      set color red
+    ]
+  ]
+
+  ask turtle (number_of_voters + 1) [ ;party 2
+    ask my-links [
+      set color green
+    ]
+     ask link-neighbors [
+      set color green
+    ]
+  ]
+
+  ask turtle (number_of_voters + 2) [ ;party 3
+    ask my-links [
+      set color blue
+    ]
+     ask link-neighbors [
+      set color blue
+    ]
+  ]
 
 end
 @#$#@#$#@
@@ -221,7 +220,7 @@ number_of_voters
 number_of_voters
 5
 150
-44.0
+128.0
 1
 1
 NIL
