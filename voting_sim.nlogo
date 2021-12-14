@@ -54,7 +54,8 @@ end
 
 
 to plurality_voting
-  clear-links
+  reset
+
   ask voters [
     show min-one-of parties [distance myself]
   ]
@@ -73,9 +74,10 @@ end
 
 
 to approval_voting
-  clear-links
+  reset
+
   ask parties [
-    create-links-with voters in-radius 16
+    create-links-with voters in-radius radius
   ]
 
   set_matching_colors ;note: first choice will be the color of the voter, even though they can have multiple votes.
@@ -84,8 +86,18 @@ end
 
 
 to instant_runoff
-  clear-links
+  reset
   ; ticks gebruiken voor meerdere rondes
+
+end
+
+
+to reset
+  ;reset colors and links
+  clear-links
+  ask voters with [size = 1] [
+    set color black
+  ]
 
 end
 
@@ -220,17 +232,17 @@ number_of_voters
 number_of_voters
 5
 150
-128.0
+109.0
 1
 1
 NIL
 HORIZONTAL
 
 BUTTON
-16
-301
-129
-334
+15
+327
+128
+360
 Plurality voting
 plurality_voting
 NIL
@@ -244,10 +256,10 @@ NIL
 1
 
 BUTTON
-16
-341
-129
-374
+15
+367
+128
+400
 Approval voting
 approval_voting
 NIL
@@ -259,6 +271,21 @@ NIL
 NIL
 NIL
 1
+
+SLIDER
+15
+288
+152
+321
+radius
+radius
+1
+30
+13.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -615,6 +642,31 @@ confirm_parties</setup>
     <metric>count turtles with [color = red]</metric>
     <metric>count turtles with [color = green]</metric>
     <metric>count turtles with [color = blue]</metric>
+    <enumeratedValueSet variable="partij1">
+      <value value="&quot;Groen Links&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="partij2">
+      <value value="&quot;JA21&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="partij3">
+      <value value="&quot;FVD&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number_of_voters">
+      <value value="5"/>
+      <value value="50"/>
+      <value value="100"/>
+      <value value="150"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="approval voting" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup
+confirm_parties</setup>
+    <go>approval_voting</go>
+    <timeLimit steps="1"/>
+    <metric>count turtles with [color = red]</metric>
+    <metric>count turtles with [color = green]</metric>
+    <metric>count turtles with [color = blue]</metric>
+    <metric>count turtles with [color = black]</metric>
     <enumeratedValueSet variable="partij1">
       <value value="&quot;Groen Links&quot;"/>
     </enumeratedValueSet>
