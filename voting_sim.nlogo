@@ -1,5 +1,6 @@
 breed [parties party]
 breed [voters voter]
+parties-own[votes]
 
 to setup
   __change-topology false false ; set world wrapping to false
@@ -8,7 +9,7 @@ to setup
     set pcolor white
   ]
   create_voters
-
+  draw_grid
 
 end
 
@@ -24,6 +25,7 @@ cro 1 [
     set heading  270 draw_line home
     die
   ]
+
 end
 
 
@@ -44,6 +46,9 @@ end
 
 
 to confirm_parties
+  ;reset
+  ask turtles with [size = 3] [die]
+
   ifelse partij1 = partij2 or partij1 = partij3 or partij2 = partij3 [
     show "U kunt niet meermaal dezelfde partij kiezen"
   ] [
@@ -70,6 +75,42 @@ to place_parties
     set color black
   ] ] ]
 
+
+end
+
+
+to strategic
+    ;check lengtes van links vanuit voters naar partijen:
+  ask voters [
+    let len [link-length] of my-links
+    let first_choice first sort [link-length] of my-links
+    let second_choice item 1 sort [link-length] of my-links
+    let last_choice last sort [link-length] of my-links
+
+    ;implement chance to vote on different choice than the first:
+    ifelse second_choice - first_choice < 5 [
+      ;show "Verschil tussen first en second choice is klein, switch naar second choice."
+      ask links with [link-length = second_choice] [set color red]
+    ] [
+      ask links with [link-length = first_choice] [set color blue]
+    ]
+  ]
+  ask links with [color = grey] [die]
+
+end
+
+
+to plurlity_strategic_vote
+  reset
+
+  ask parties [
+    create-links-with voters in-radius 100 ;radius of 100 so voters have connections with all parties!
+  ]
+
+  strategic
+  set_matching_colors ; change the colors to match the parties
+  show_winner
+
 end
 
 
@@ -77,18 +118,17 @@ to plurality_voting
   reset
 
   ask voters [
-    show min-one-of parties [distance myself]
-  ]
-
-  ask voters [
     create-link-with min-one-of parties [distance myself]
   ]
 
-  ask parties [
-    show count link-neighbors
-  ]
-
   set_matching_colors
+  show_winner
+
+end
+
+
+to approval_strategic_vote
+
 
 end
 
@@ -102,12 +142,35 @@ to approval_voting
 
   set_matching_colors ;note: first choice will be the color of the voter, even though they can have multiple votes.
 
+  show_winner
+
 end
 
 
 to instant_runoff
   reset
-  ; ticks gebruiken voor meerdere rondes
+  ask parties [
+    create-links-with voters in-radius 100 ;radius of 100 so voters have connections with all parties!
+  ]
+
+  ;check lengtes van links vanuit voters naar partijen:
+  ask voters [
+    let len [link-length] of my-links
+    let first_choice first sort [link-length] of my-links
+    let second_choice item 1 sort [link-length] of my-links
+    let last_choice last sort [link-length] of my-links
+
+    ;implement chance to vote on different choice than the first:
+    ifelse second_choice - first_choice < 5 [
+      ;show "Verschil tussen first en second choice is klein, switch naar second choice."
+      ask links with [link-length = second_choice] [set color red]
+    ] [
+      ask links with [link-length = first_choice] [set color blue]
+    ]
+  ]
+  ask links with [color = grey] [die]
+  set_matching_colors
+  show_winner
 
 end
 
@@ -123,7 +186,8 @@ end
 
 
 to set_matching_colors
-  ask turtle (number_of_voters) [ ;party 1
+  ; count from voters + 1 because agent who drew grid has died.
+  ask turtle (number_of_voters + 1) [ ;party 1
     ask my-links [
       set color red
     ]
@@ -132,7 +196,7 @@ to set_matching_colors
     ]
   ]
 
-  ask turtle (number_of_voters + 1) [ ;party 2
+  ask turtle (number_of_voters + 2) [ ;party 2
     ask my-links [
       set color green
     ]
@@ -141,7 +205,7 @@ to set_matching_colors
     ]
   ]
 
-  ask turtle (number_of_voters + 2) [ ;party 3
+  ask turtle (number_of_voters + 3) [ ;party 3
     ask my-links [
       set color blue
     ]
@@ -151,12 +215,42 @@ to set_matching_colors
   ]
 
 end
+
+
+; count links instead of turtles so approval voting counting works too.
+to-report voters_for_party1
+  report count links with [color = red]
+end
+
+to-report voters_for_party2
+  report count links with [color = green]
+end
+
+to-report voters_for_party3
+  report count links with [color = blue]
+end
+
+to-report did_not_vote
+  report count turtles with [color = black] - 3
+end
+
+
+to show_winner
+  ;only for approval & plurality voting
+  ask parties [set votes count link-neighbors]
+  let winner first sort-on [(- votes)] parties
+
+  if winner = turtle (number_of_voters + 1) [show "Winner is party 1"]
+  if winner = turtle (number_of_voters + 2) [show "Winner is party 2"]
+  if winner = turtle (number_of_voters + 3) [show "Winner is party 3"]
+
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
-223
-51
-660
-489
+269
+10
+706
+448
 -1
 -1
 13.0
@@ -204,7 +298,7 @@ CHOOSER
 partij1
 partij1
 "D66" "Groen Links" "VVD" "PvDA" "SP" "SGP" "FVD" "Denk" "JA21" "50Plus" "PVV" "CDA"
-1
+0
 
 CHOOSER
 15
@@ -214,7 +308,7 @@ CHOOSER
 partij2
 partij2
 "D66" "Groen Links" "VVD" "PvDA" "SP" "SGP" "FVD" "Denk" "JA21" "50Plus" "PVV" "CDA"
-8
+7
 
 CHOOSER
 15
@@ -251,8 +345,8 @@ SLIDER
 number_of_voters
 number_of_voters
 5
-150
-109.0
+200
+200.0
 1
 1
 NIL
@@ -301,36 +395,52 @@ radius
 radius
 1
 30
-13.0
+20.0
 1
 1
 NIL
 HORIZONTAL
 
-BUTTON
-87
+MONITOR
+7
+455
+220
+500
+Aantal mensen gestemd op partij 1 (rood)
+voters_for_party1
+17
+1
 11
-150
-44
-Grid
-draw_grid
-NIL
+
+MONITOR
+242
+455
+461
+500
+Aantal mensen gestemd op partij 2 (groen)
+voters_for_party2
+17
 1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
+11
+
+MONITOR
+484
+455
+705
+500
+Aantal mensen gestemd op partij 3 (blauw)
+voters_for_party3
+17
 1
+11
 
 BUTTON
 15
-410
-84
-443
-Clear
-clear-all
+407
+128
+440
+Instant Runoff
+instant_runoff
 NIL
 1
 T
@@ -341,44 +451,32 @@ NIL
 NIL
 1
 
-TEXTBOX
-401
-36
-551
-54
-PROGRESSIEF
-12
-0.0
+MONITOR
+7
+507
+173
+552
+Aantal mensen zonder stem
+did_not_vote
+17
 1
+11
 
-TEXTBOX
-187
-260
-337
-278
-LINKS\n
-12
-0.0
+BUTTON
+131
+327
+261
+360
+Plurality strategic vote
+plurlity_strategic_vote
+NIL
 1
-
-TEXTBOX
-661
-262
-811
-280
-RECHTS
-12
-0.0
-1
-
-TEXTBOX
-397
-491
-547
-509
-CONSERVATIEF
-12
-0.0
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
 1
 
 @#$#@#$#@
@@ -723,7 +821,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.2.0
+NetLogo 6.2.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
@@ -757,9 +855,9 @@ confirm_parties</setup>
 confirm_parties</setup>
     <go>approval_voting</go>
     <timeLimit steps="1"/>
-    <metric>count turtles with [color = red]</metric>
-    <metric>count turtles with [color = green]</metric>
-    <metric>count turtles with [color = blue]</metric>
+    <metric>count links with [color = red] ;links ipv turtles</metric>
+    <metric>count links with [color = green]</metric>
+    <metric>count links with [color = blue]</metric>
     <metric>count turtles with [color = black]</metric>
     <enumeratedValueSet variable="partij1">
       <value value="&quot;Groen Links&quot;"/>
