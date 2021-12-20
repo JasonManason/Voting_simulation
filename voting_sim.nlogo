@@ -128,7 +128,22 @@ end
 
 
 to approval_strategic_vote
+  reset
+  ask parties [
+    create-links-with voters in-radius radius
+  ]
 
+  ask voters [
+    let len [link-length] of my-links
+    ; if a voter has multiple favorites, they drop their last choice
+    if count my-links > 1 [
+      let last_choice last sort [link-length] of my-links
+      ask my-links with [link-length = last_choice] [die]
+    ]
+  ]
+
+  set_matching_colors
+  show_winner
 
 end
 
@@ -140,7 +155,7 @@ to approval_voting
     create-links-with voters in-radius radius
   ]
 
-  set_matching_colors ;note: first choice will be the color of the voter, even though they can have multiple votes.
+  set_matching_colors
 
   show_winner
 
@@ -153,24 +168,22 @@ to instant_runoff
     create-links-with voters in-radius 100 ;radius of 100 so voters have connections with all parties!
   ]
 
-  ;check lengtes van links vanuit voters naar partijen:
   ask voters [
-    let len [link-length] of my-links
+    let len sort [link-length] of my-links ; shortest to longest link
     let first_choice first sort [link-length] of my-links
     let second_choice item 1 sort [link-length] of my-links
     let last_choice last sort [link-length] of my-links
+    show len
 
-    ;implement chance to vote on different choice than the first:
-    ifelse second_choice - first_choice < 5 [
-      ;show "Verschil tussen first en second choice is klein, switch naar second choice."
-      ask links with [link-length = second_choice] [set color red]
-    ] [
-      ask links with [link-length = first_choice] [set color blue]
-    ]
+    ;ask link-neighbors with [link-length my-links = first_choice] [
+    ;show "hier"]
+    ;let link-neighbor-rank sort-on [abs (ability - [ability] of myself)] link-neighbors
+
+    ;let rank sort-on [link-length] link-neighbors
+    ;show rank
+
   ]
-  ask links with [color = grey] [die]
-  set_matching_colors
-  show_winner
+
 
 end
 
@@ -236,7 +249,6 @@ end
 
 
 to show_winner
-  ;only for approval & plurality voting
   ask parties [set votes count link-neighbors]
   let winner first sort-on [(- votes)] parties
 
@@ -346,7 +358,7 @@ number_of_voters
 number_of_voters
 5
 200
-200.0
+5.0
 1
 1
 NIL
@@ -395,7 +407,7 @@ radius
 radius
 1
 30
-20.0
+15.0
 1
 1
 NIL
@@ -463,12 +475,29 @@ did_not_vote
 11
 
 BUTTON
-131
+133
 327
-261
+263
 360
 Plurality strategic vote
 plurlity_strategic_vote
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+134
+367
+263
+400
+Approval strategic vote
+approval_strategic_vote
 NIL
 1
 T
