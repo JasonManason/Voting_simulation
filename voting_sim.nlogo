@@ -1,6 +1,7 @@
 breed [parties party]
 breed [voters voter]
 parties-own[votes]
+globals [first_vote second_vote third_vote]
 
 to setup
   __change-topology false false ; set world wrapping to false
@@ -91,16 +92,20 @@ to strategic
     ifelse second_choice - first_choice < 5 [
       ;show "Verschil tussen first en second choice is klein, switch naar second choice."
       ask links with [link-length = second_choice] [set color red]
+      set second_vote second_vote + 1
     ] [
       ask links with [link-length = first_choice] [set color blue]
+      set first_vote first_vote + 1
     ]
   ]
   ask links with [color = grey] [die]
+  show first_vote
+  show second_vote
 
 end
 
 
-to plurlity_strategic_vote
+to plurality_strategic_vote
   reset
 
   ask parties [
@@ -136,9 +141,16 @@ to approval_strategic_vote
   ask voters [
     let len [link-length] of my-links
     ; if a voter has multiple favorites, they drop their last choice
-    if count my-links > 1 [
+    ifelse count my-links > 1 [
       let last_choice last sort [link-length] of my-links
       ask my-links with [link-length = last_choice] [die]
+      ifelse count my-links = 3 [
+        set third_vote third_vote + 1
+      ] [
+        set second_vote second_vote + 1
+      ]
+    ] [
+    set first_vote first_vote + 1
     ]
   ]
 
@@ -189,11 +201,15 @@ end
 
 
 to reset
-  ;reset colors and links
+  ;reset colors, links and vote counters
   clear-links
   ask voters with [size = 1] [
     set color black
   ]
+
+  set first_vote 0
+  set second_vote 0
+  set third_vote 0
 
 end
 
@@ -245,6 +261,18 @@ end
 
 to-report did_not_vote
   report count turtles with [color = black] - 3
+end
+
+to-report first_votes
+  report first_vote
+end
+
+to-report second_votes
+  report second_vote
+end
+
+to-report third_votes
+  report third_vote
 end
 
 
@@ -358,7 +386,7 @@ number_of_voters
 number_of_voters
 5
 200
-5.0
+133.0
 1
 1
 NIL
@@ -407,7 +435,7 @@ radius
 radius
 1
 30
-15.0
+18.0
 1
 1
 NIL
@@ -425,9 +453,9 @@ voters_for_party1
 11
 
 MONITOR
-242
+224
 455
-461
+443
 500
 Aantal mensen gestemd op partij 2 (groen)
 voters_for_party2
@@ -436,9 +464,9 @@ voters_for_party2
 11
 
 MONITOR
-484
+448
 455
-705
+669
 500
 Aantal mensen gestemd op partij 3 (blauw)
 voters_for_party3
@@ -464,10 +492,10 @@ NIL
 1
 
 MONITOR
-7
-507
-173
-552
+673
+455
+839
+500
 Aantal mensen zonder stem
 did_not_vote
 17
@@ -480,7 +508,7 @@ BUTTON
 263
 360
 Plurality strategic vote
-plurlity_strategic_vote
+plurality_strategic_vote
 NIL
 1
 T
@@ -507,6 +535,39 @@ NIL
 NIL
 NIL
 1
+
+MONITOR
+7
+505
+221
+550
+Aantal mensen dat stemt op eerste keuze
+first_votes
+17
+1
+11
+
+MONITOR
+226
+504
+443
+549
+Aantal mensen dat stemt op tweede keuze
+second_votes
+17
+1
+11
+
+MONITOR
+449
+504
+669
+549
+Aantal mensen dat stemt op derde keuze
+third_votes
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -855,7 +916,7 @@ NetLogo 6.2.1
 @#$#@#$#@
 @#$#@#$#@
 <experiments>
-  <experiment name="plurality voting" repetitions="1" runMetricsEveryStep="true">
+  <experiment name="plurality voting" repetitions="500" runMetricsEveryStep="true">
     <setup>setup
 confirm_parties</setup>
     <go>plurality_voting</go>
@@ -864,44 +925,64 @@ confirm_parties</setup>
     <metric>count turtles with [color = green]</metric>
     <metric>count turtles with [color = blue]</metric>
     <enumeratedValueSet variable="partij1">
-      <value value="&quot;Groen Links&quot;"/>
+      <value value="&quot;D66&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="partij2">
-      <value value="&quot;JA21&quot;"/>
+      <value value="&quot;Denk&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="partij3">
       <value value="&quot;FVD&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="number_of_voters">
-      <value value="5"/>
-      <value value="50"/>
-      <value value="100"/>
-      <value value="150"/>
+      <value value="200"/>
     </enumeratedValueSet>
   </experiment>
-  <experiment name="approval voting" repetitions="1" runMetricsEveryStep="true">
+  <experiment name="approval voting" repetitions="500" runMetricsEveryStep="true">
     <setup>setup
 confirm_parties</setup>
     <go>approval_voting</go>
     <timeLimit steps="1"/>
-    <metric>count links with [color = red] ;links ipv turtles</metric>
+    <metric>count links with [color = red]</metric>
     <metric>count links with [color = green]</metric>
     <metric>count links with [color = blue]</metric>
     <metric>count turtles with [color = black]</metric>
     <enumeratedValueSet variable="partij1">
-      <value value="&quot;Groen Links&quot;"/>
+      <value value="&quot;D66&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="partij2">
-      <value value="&quot;JA21&quot;"/>
+      <value value="&quot;Denk&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="partij3">
       <value value="&quot;FVD&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="number_of_voters">
-      <value value="5"/>
-      <value value="50"/>
-      <value value="100"/>
-      <value value="150"/>
+      <value value="200"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="plurality voting strategic" repetitions="500" runMetricsEveryStep="true">
+    <setup>setup
+confirm_parties</setup>
+    <go>plurality_strategic_vote</go>
+    <timeLimit steps="1"/>
+    <metric>count turtles with [color = red]</metric>
+    <metric>count turtles with [color = green]</metric>
+    <metric>count turtles with [color = blue]</metric>
+    <metric>first_vote</metric>
+    <metric>second_vote</metric>
+    <enumeratedValueSet variable="partij1">
+      <value value="&quot;D66&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="partij2">
+      <value value="&quot;Denk&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="partij3">
+      <value value="&quot;FVD&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="radius">
+      <value value="18"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="number_of_voters">
+      <value value="200"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>
